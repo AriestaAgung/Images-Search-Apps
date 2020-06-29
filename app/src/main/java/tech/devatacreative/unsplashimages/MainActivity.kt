@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.nav_item, menu)
-
         val manager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
         val searchItem = menu?.findItem(R.id.action_search)
         val searchView = searchItem?.actionView as SearchView
@@ -42,11 +41,16 @@ class MainActivity : AppCompatActivity() {
                 searchView.clearFocus()
                 searchView.setQuery("", false)
                 searchItem.collapseActionView()
+                resultTextView.text = "Showing results for " + query
+                getImageFromSearch(query.toString())
 
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
+
+                resultTextView.text = "Showing results for " + newText
+                getImageFromSearch(newText.toString())
                 return false
 
             }
@@ -61,6 +65,41 @@ class MainActivity : AppCompatActivity() {
         mainImageRecyclerView.layoutManager = GridLayoutManager(this, 2)
 
 
+    }
+
+    private fun getImageFromSearch(query: String) : ArrayList<String>  {
+        val datas = HashMap<String, String>()
+        datas["client_id"] = APIClient().clientid
+        datas["query"] = query
+        datas["page"] = "1"
+        val call: Call<Results> = interfaces.getHomeURL(datas)
+        var imageModel  = ArrayList<String>()
+        var title = ArrayList<String>()
+
+        call.enqueue(object : Callback<Results> {
+            override fun onResponse(call: Call<Results>, response: Response<Results>) {
+                val result = response.body()?.results
+                print("Data Fetched")
+                imageModel.clear()
+                title.clear()
+                if (result != null) {
+                    for (data in result){
+
+                        imageModel.add(data.urls?.regular.toString())
+                        title.add(data.user?.name.toString())
+
+                    }
+                    Log.d("ISI URL : ", imageModel.toString())
+                    mainImageRecyclerView.adapter = MainActivityAdapter(imageModel, title)
+
+
+                }
+            }
+            override fun onFailure(call: Call<Results>, t: Throwable) {
+                print("Errornya : " + t.printStackTrace())
+            }
+        })
+        return imageModel
     }
 
     private fun getHomeURLImage() : ArrayList<String>  {
