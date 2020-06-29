@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">UnsplashImages</string>
+    <string name="type_something">Type Something</string>
+    <string name="search">Search</string>
+</resources>
