@@ -11,6 +11,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -19,6 +20,7 @@ import tech.devatacreative.unsplashimages.Adapter.MainActivityAdapter
 import tech.devatacreative.unsplashimages.Model.Results
 import tech.devatacreative.unsplashimages.Model.ResultsItem
 import tech.devatacreative.unsplashimages.Utils.APIClient
+import tech.devatacreative.unsplashimages.Utils.GridItemDecoration
 import tech.devatacreative.unsplashimages.Utils.UnsplashInterface
 import java.util.*
 import kotlin.collections.ArrayList
@@ -28,6 +30,7 @@ class MainActivity : AppCompatActivity() {
 
     private var interfaces : UnsplashInterface = APIClient().getClientBuilder().create(UnsplashInterface::class.java)
     private var datalist : MutableList<Results> = mutableListOf()
+    private val NUM_GRIDS = 2
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater = menuInflater
@@ -61,8 +64,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val layoutManager : RecyclerView.LayoutManager = GridLayoutManager(this, NUM_GRIDS)
+
         getHomeURLImage()
-        mainImageRecyclerView.layoutManager = GridLayoutManager(this, 2)
+        mainImageRecyclerView.layoutManager = layoutManager
+        mainImageRecyclerView.addItemDecoration(GridItemDecoration(10,2))
+
 
 
     }
@@ -84,12 +92,11 @@ class MainActivity : AppCompatActivity() {
                 title.clear()
                 if (result != null) {
                     for (data in result){
-
                         imageModel.add(data.urls?.regular.toString())
                         title.add(data.user?.name.toString())
-
                     }
                     Log.d("ISI URL : ", imageModel.toString())
+                    Log.d("ISI Name : ", title.toString())
                     mainImageRecyclerView.adapter = MainActivityAdapter(imageModel, title)
 
 
@@ -110,6 +117,7 @@ class MainActivity : AppCompatActivity() {
         val call: Call<Results> = interfaces.getHomeURL(datas)
         var imageModel  = ArrayList<String>()
         var title = ArrayList<String>()
+        resultTextView.text = "Welcome, enjoy your random picture of the day!"
 
         call.enqueue(object : Callback<Results> {
             override fun onResponse(call: Call<Results>, response: Response<Results>) {
